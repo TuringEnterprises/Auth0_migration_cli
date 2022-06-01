@@ -1,3 +1,5 @@
+const readCredentials = require( './readFile');
+
 const request = require('request');
 const fs = require('fs');
 const moment = require('moment')
@@ -101,12 +103,48 @@ const askDbCredentials = async () => {
 }
 
 
+const validateCredentials = (obj) => {
+    const absentKey = []
+    if (!obj.ACCOUNT_NAME) {
+        absentKey.push("ACCOUNT_NAME")
+    }
+    if (!obj.AUTH0_CLIENT_ID) {
+        absentKey.push("AUTH0_CLIENT_ID")
+    }
+    if (!obj.AUTH0_CLIENT_SECRET) {
+        absentKey.push("AUTH0_CLIENT_SECRET")
+    }
+    if (!obj.AUTH0_MANAGEMENT_CLIENTID) {
+        absentKey.push("AUTH0_MANAGEMENT_CLIENTID")
+    }
+    if (!obj.AUTH0_MANAGEMENT_CLIENT_SECRET) {
+        absentKey.push("AUTH0_MANAGEMENT_CLIENT_SECRET")
+    }
+    if (!obj.AUTH0_AUDIENCE) {
+        absentKey.push("AUTH0_AUDIENCE")
+    }
+    if (!obj.DB_CONNECTION_ID) {
+        absentKey.push("DB_CONNECTION_ID")
+    }
+    if (!obj.AUTH0_TENANT) {
+        absentKey.push("AUTH0_TENANT")
+    }
+    if(absentKey.length) {
+        console.log(`This keys are not present within the .migrate_profile file ${absentKey.join(",")}`)
+        process.exit(1)
+    }
+}
+
 
 //Run import job
 export const run = async () => {
     // log(chalk."Runing...")
     // const status = new Spinner('Quering db for user record, please wait...');
     // status.start();
+    const accessCredentials = await readCredentials()
+    validateCredentials(accessCredentials)
+
+
     const credentials = await askDbCredentials();
     await queryTable(credentials)
     // status.stop();
@@ -161,9 +199,10 @@ context.data = {};
  */
 
 async function importUsers(filepath, retries, numOfRetries) {
-    context.data.ACCOUNT_NAME = process.env.ACCOUNT_NAME 
-    context.data.CLIENT_ID = process.env.AUTH0_CLIENT_ID
-    context.data.CLIENT_SECRET = process.env.AUTH0_CLIENT_SECRET 
+    const { ACCOUNT_NAME, AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET } = await readCredentials()
+    context.data.ACCOUNT_NAME = ACCOUNT_NAME
+    context.data.CLIENT_ID = AUTH0_CLIENT_ID
+    context.data.CLIENT_SECRET = AUTH0_CLIENT_SECRET
     context.filepath = filepath;
     console.log(filepath);
     await importUserJob(context, retries, numOfRetries)
@@ -176,18 +215,19 @@ async function importUsers(filepath, retries, numOfRetries) {
 */
 
 async function getAuth0AccessToken() {
+    const { AUTH0_MANAGEMENT_CLIENTID, AUTH0_MANAGEMENT_CLIENT_SECRET, AUTH0_AUDIENCE, AUTH0_TENANT } = await readCredentials()
     
     let accessToken = null;
     let lastLogin = null;
     const payload = {
-        "client_id": process.env.AUTH0_MANAGEMENT_CLIENTID,
-        "client_secret": process.env.AUTH0_MANAGEMENT_CLIENT_SECRET,
-        "audience": process.env.AUTH0_AUDIENCE,
+        "client_id": AUTH0_MANAGEMENT_CLIENTID,
+        "client_secret": AUTH0_MANAGEMENT_CLIENT_SECRET,
+        "audience": AUTH0_AUDIENCE,
         "grant_type":"client_credentials"
       }
 
     if (!accessToken || !lastLogin || moment(new Date()).diff(lastLogin, 'minutes') > 30) {
-        const res = await axios.post( `${process.env.AUTH0_TENANT}/oauth/token`, payload)
+        const res = await axios.post( `${AUTH0_TENANT}/oauth/token`, payload)
         lastLogin = moment();
         accessToken = res.data.access_token;
         
@@ -209,12 +249,13 @@ async function getAuth0AccessToken() {
  */
 
 async function importUserJob(context, retries, numOfRetries) {
+    const { DB_CONNECTION_ID, AUTH0_TENANT } = await readCredentials()
     try {
-        const url = `${process.env.AUTH0_TENANT}/api/v2/jobs/users-imports`;
+        const url = `${AUTH0_TENANT}/api/v2/jobs/users-imports`;
         const formData = new FormData();
         formData.append('users', fs.createReadStream(context.filepath));
         formData.append('send_completion_email', 'true');
-        formData.append('connection_id', process.env.DB_CONNECTION_ID)
+        formData.append('connection_id', DB_CONNECTION_ID)
 
         const response = await axios({
             method: "post",
@@ -231,6 +272,7 @@ async function importUserJob(context, retries, numOfRetries) {
 }
 
 async function getJobStatus(id, context, retries, numOfRetries) {
+    const { AUTH0_TENANT } = await readCredentials()
     try {
         const options = {
             method: 'GET',
@@ -239,7 +281,7 @@ async function getJobStatus(id, context, retries, numOfRetries) {
                 authorization: 'Bearer ' + await getAuth0AccessToken()
               }
         }
-        const resp = await axios.get(`${process.env.AUTH0_TENANT}/api/v2/jobs/${id}`, options);
+        const resp = await axios.get(`${AUTH0_TENANT}/api/v2/jobs/${id}`, options);
         console.log(resp.data)
         if (resp.data.status === "pending" || resp.data.status === "processing") {
                 return await getJobStatus(resp.data.id, context, retries, numOfRetries)
@@ -270,12 +312,3 @@ async function getJobStatus(id, context, retries, numOfRetries) {
         console.error(err);
     }
 };
-
-
-
-//Create a config in a location
-//Put location in gitignore
-//Pass location to command line variable
-
-//Read off location passed to the command line
-//Fetch and load details of config file into index.js
