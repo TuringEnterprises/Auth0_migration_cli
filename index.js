@@ -167,7 +167,7 @@ async function queryTable(payload) {
 
         //Add spinner
         const data = await jsonAlgorithm(res)
-        console.log(`Generated ${data.length} file(s) from ${res.length}` )
+        console.log(`Generated ${data.length} file(s) from ${res.length} array of users` )
         //CLose spiiner
 
         console.log("Uploading users data")
