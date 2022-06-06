@@ -1,43 +1,52 @@
 {
-  "name": "@turing/migrate",
-  "version": "1.0.0",
-  "description": "Auth0 Migration cli",
-  "main": "index.js",
-  "bin": {
-    "migrate": "bin/migrate.js"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [
-    "migrate"
-  ],
-  "dependencies": {
-    "async": "^3.2.3",
-    "auth0": "^2.42.0",
-    "axios": "^0.27.2",
-    "chalk": "^5.0.1",
-    "clear": "^0.1.0",
-    "clui": "^0.3.6",
-    "commander": "^9.2.0",
-    "configstore": "^6.0.0",
-    "dotenv": "^16.0.1",
-    "esm": "^3.2.25",
-    "figlet": "^1.5.2",
-    "form-data": "^4.0.0",
-    "inquirer": "^8.2.4",
-    "minimist": "^1.2.6",
-    "moment": "^2.29.3",
-    "mysql": "^2.18.1",
-    "mysql2": "^2.3.3",
-    "pg": "^8.7.3",
-    "request": "^2.88.2",
-    "yesno": "^0.3.1"
-  },
-  "devDependencies": {},
-  "author": "",
-  "license": "ISC"
+    "name": "@turing/migrate",
+    "version": "1.0.0",
+    "description": "Auth0 Migration cli",
+    "main": "./index.js",
+    "bin": {
+        "migrate": "bin/migrate.js"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "prettify": "prettier --write .",
+        "lint": "eslint ."
+    },
+    "keywords": [
+        "migrate"
+    ],
+    "dependencies": {
+        "async": "^3.2.3",
+        "auth0": "^2.42.0",
+        "axios": "^0.27.2",
+        "chalk": "^5.0.1",
+        "clear": "^0.1.0",
+        "clui": "^0.3.6",
+        "commander": "^9.2.0",
+        "configstore": "^6.0.0",
+        "dotenv": "^16.0.1",
+        "esm": "^3.2.25",
+        "figlet": "^1.5.2",
+        "form-data": "^4.0.0",
+        "inquirer": "^8.2.4",
+        "minimist": "^1.2.6",
+        "moment": "^2.29.3",
+        "mysql": "^2.18.1",
+        "mysql2": "^2.3.3",
+        "pg": "^8.7.3",
+        "request": "^2.88.2",
+        "yesno": "^0.3.1"
+    },
+    "devDependencies": {
+        "@babel/eslint-parser": "^7.18.2",
+        "eslint": "^8.17.0",
+        "eslint-config-prettier": "^8.5.0",
+        "eslint-config-recommended": "^4.1.0",
+        "eslint-plugin-prettier": "^4.0.0",
+        "prettier": "^2.6.2"
+    },
+    "author": "",
+    "license": "ISC"
 }

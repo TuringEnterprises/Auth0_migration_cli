@@ -1,11 +1,11 @@
 # Auth0_migration_cli
-A node cli to batch upload internal turing users to auth0
 
+A node cli to batch upload internal turing users to auth0
 
 ### Installation
 
 ```sh
-npm install 
+npm install
 ```
 
 ## Credential Access
@@ -13,9 +13,9 @@ npm install
 Create **migrate_profile** file in the root directory of your VM with the following keys
 like so
 
-- touch ~/.migrate_profile
+-   touch ~/.migrate_profile
 
-- vim ~/.migrate_profile
+-   vim ~/.migrate_profile
 
 Then add the following keys
 
@@ -42,4 +42,3 @@ AUTH0_TENANT=
 ```sh
 migrate
 ```
-
