@@ -176,23 +176,23 @@ async function getAuth0AccessToken(accessCredentials) {
  * Import users workflow
  */
 
-async function importUserJob(context) {
+async function importUserJob(jobPayload) {
     try {
-        const url = `${context.data.AUTH0_TENANT}/api/v2/jobs/users-imports`;
+        const url = `${jobPayload.data.AUTH0_TENANT}/api/v2/jobs/users-imports`;
         const formData = new FormData();
-        formData.append('users', fs.createReadStream(context.filePath));
+        formData.append('users', fs.createReadStream(jobPayload.filePath));
         formData.append('send_completion_email', 'false');
-        formData.append('connection_id', context.data.DB_CONNECTION_ID);
+        formData.append('connection_id', jobPayload.data.DB_CONNECTION_ID);
 
         const response = await axios({
             method: 'post',
             url,
             data: formData,
-            headers: { authorization: 'Bearer ' + (await getAuth0AccessToken(context.data)) },
+            headers: { authorization: 'Bearer ' + (await getAuth0AccessToken(jobPayload.data)) },
         });
 
         console.log('response>>', response.data);
-        return await checkJobStatusAfterUpload(response.data.id, context.data);
+        return await checkJobStatusAfterUpload(response.data.id, jobPayload.data);
     } catch (error) {
         throw error;
     }
