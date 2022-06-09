@@ -30,7 +30,7 @@ const connectToDB = async (payload) => {
     }
 };
 
-export const queryUserTable = async (tablePayload) => {
+const queryUserTable = async (tablePayload) => {
     const { tableName, connection } = await connectToDB(tablePayload);
 
     const postmatchRoles = {
@@ -68,3 +68,5 @@ export const queryUserTable = async (tablePayload) => {
 
     return userList.flat();
 };
+
+export default queryUserTable;

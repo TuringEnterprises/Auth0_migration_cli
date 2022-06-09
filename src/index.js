@@ -3,7 +3,7 @@ import axios from 'axios';
 import FormData from 'form-data';
 import pkg from 'inquirer';
 import { balancedFileList, deleteFile } from './calculateSize.js';
-import { queryUserTable } from './dbConnection.js';
+import queryUserTable from './dbConnection.js';
 import readCredentials from './readFile.js';
 const { prompt } = pkg;
 
@@ -224,7 +224,7 @@ async function getJobStatus(jobId, accessCredentials) {
 async function checkJobStatusAfterUpload(jobId, accessCredentials) {
     try {
         const { data } = await getJobStatus(jobId, accessCredentials);
-        console.log(data)
+        console.log(data);
 
         if (data.status === 'completed') {
             if (data.summary.failed > 0) {
