@@ -224,6 +224,7 @@ async function getJobStatus(jobId, accessCredentials) {
 async function checkJobStatusAfterUpload(jobId, accessCredentials) {
     try {
         const { data } = await getJobStatus(jobId, accessCredentials);
+        console.log(data)
 
         if (data.status === 'completed') {
             if (data.summary.failed > 0) {
