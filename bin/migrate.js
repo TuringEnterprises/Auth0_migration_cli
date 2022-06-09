@@ -1,5 +1,5 @@
 #!/usr/bin/env node
 
-require = require('esm')(module);
+import startImportProcess from '../src/index.js';
 
-require('../index').run();
+startImportProcess();
