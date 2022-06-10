@@ -2,8 +2,8 @@ import fs from 'fs';
 import axios from 'axios';
 import FormData from 'form-data';
 import pkg from 'inquirer';
-import { balancedFileList, deleteFile } from './calculateSize.js';
-import queryUserTable from './dbConnection.js';
+import { deleteFile } from './calculateSize.js';
+import generateUserFileListFromDB from './dbConnection.js';
 import readCredentials from './readFile.js';
 const { prompt } = pkg;
 
@@ -117,7 +117,7 @@ const validateCredentials = (obj) => {
         absentKey.push('AUTH0_TENANT');
     }
     if (absentKey.length) {
-        throw new Error(`This keys were not found in your Auth0 config file ${absentKey.join(',')}`);
+        throw new Error(`These keys were not found in your Auth0 config file: ${absentKey.join(',')}`);
     }
 };
 
@@ -133,10 +133,9 @@ const startImportProcess = async () => {
 // Query table to return rows
 async function queryTableAndUploadRecord(databaseCredentials, accessCredentials) {
     try {
-        const postMatchUsers = await queryUserTable(databaseCredentials);
+        const files = await generateUserFileListFromDB(databaseCredentials);
 
-        const files = await balancedFileList(postMatchUsers);
-        console.log(`Generated ${files.length} file(s) from ${postMatchUsers.length} array of users`);
+        console.log(`Generated ${files.length} file(s)`);
 
         console.log('Uploading users data');
         //FIX
@@ -222,23 +221,19 @@ async function getJobStatus(jobId, accessCredentials) {
  * Check job status with an option to retry
  */
 async function checkJobStatusAfterUpload(jobId, accessCredentials) {
-    try {
-        const { data } = await getJobStatus(jobId, accessCredentials);
-        console.log(data);
+    const { data } = await getJobStatus(jobId, accessCredentials);
+    console.log(data);
 
-        if (data.status === 'completed') {
-            if (data.summary.failed > 0) {
-                console.log(`Failed to upload ${data.summary.failed} of ${data.summary.total} document(s)`);
-            }
-            if (data.summary.failed === 0) {
-                console.log(`Uploaded ${data.summary.total} of ${data.summary.total} document(s)`);
-            }
+    if (data.status === 'completed') {
+        if (data.summary.failed > 0) {
+            console.log(`Failed to upload ${data.summary.failed} of ${data.summary.total} document(s)`);
         }
-        if (data.status === 'failed') {
-            console.log('Failed to upload');
+        if (data.summary.failed === 0) {
+            console.log(`Uploaded ${data.summary.total} of ${data.summary.total} document(s)`);
         }
-    } catch (error) {
-        throw error;
+    }
+    if (data.status === 'failed') {
+        console.log('Failed to upload');
     }
 }
 

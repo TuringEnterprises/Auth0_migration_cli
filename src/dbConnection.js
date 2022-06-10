@@ -1,11 +1,11 @@
-import mysql from 'mysql';
-import util from 'util';
+import mysql from 'mysql2/promise';
+import { balancedFileList } from './calculateSize.js';
 
-const connectToDB = async (payload) => {
+const connectToDb = async (connectionArgs) => {
     try {
-        const { dbHost, dbPort, dbPassword, dbName, dbUser, tableName } = payload;
+        const { dbHost, dbPort, dbPassword, dbName, dbUser } = connectionArgs;
 
-        const connection = mysql.createConnection({
+        const connection = await mysql.createConnection({
             host: dbHost,
             port: dbPort,
             user: dbUser,
@@ -13,25 +13,16 @@ const connectToDB = async (payload) => {
             database: dbName,
         });
 
-        // connect to the database
-        connection.connect((err) => {
-            if (err) {
-                throw err;
-            }
-            console.log('connected as... ' + connection.threadId);
-        });
-
         return {
             connection,
-            tableName,
         };
     } catch (error) {
         throw error;
     }
 };
 
-const queryUserTable = async (tablePayload) => {
-    const { tableName, connection } = await connectToDB(tablePayload);
+const generateUserFileListFromDB = async (tablePayload) => {
+    const { connection } = await connectToDb(tablePayload);
 
     const postmatchRoles = {
         ADMIN: 0,
@@ -44,29 +35,28 @@ const queryUserTable = async (tablePayload) => {
 
     const postMatchObjectKeys = Object.keys(postmatchRoles);
 
-    const query = util.promisify(connection.query).bind(connection);
-
-    const tableCount = `SELECT COUNT(email) as totalTableCount FROM ${tableName}`;
-    const count = (await query(tableCount))[0].totalTableCount;
+    const tableCount = `SELECT COUNT(email) as totalTableCount FROM ${tablePayload.tableName}`;
+    const [rows] = await connection.query(tableCount);
+    const count = rows[0]?.totalTableCount;
     const BATCH_LIMIT = 500;
 
-    const userList = [];
+    const userFileList = [];
     for (let i = 0; i < count; i += BATCH_LIMIT) {
-        const queryString = `SELECT email, password, user_role_id, name  FROM ${tableName} LIMIT ${BATCH_LIMIT} OFFSET ${i}`;
-        const queryResult = await query(queryString);
-        const responseFromDB = Object.values(JSON.parse(JSON.stringify(queryResult)));
+        const queryString = `SELECT email, password, user_role_id, name  FROM ${tablePayload.tableName} LIMIT ${BATCH_LIMIT} OFFSET ${i}`;
+        const [queryResult] = await connection.query(queryString);
 
-        const postMatchUsers = responseFromDB.map((item) => {
+        const postMatchUsers = queryResult.map((item) => {
             const rolesIndex = postMatchObjectValues.indexOf(item.user_role_id);
             item.app_metadata = { roles: [postMatchObjectKeys[rolesIndex]] };
             return item;
         });
-        userList.push(postMatchUsers);
+        const files = await balancedFileList(postMatchUsers, i);
+        userFileList.push(files);
     }
 
     connection.end();
 
-    return userList.flat();
+    return userFileList.flat();
 };
 
-export default queryUserTable;
+export default generateUserFileListFromDB;

@@ -51,13 +51,12 @@ const splitArray = (listOfFiles) => {
     return fileList;
 };
 
-export async function balancedFileList(fileList) {
+export async function balancedFileList(fileList, fileIndex) {
     const BYTE_KILO_CONVERSION = 0.001;
     const MAX_FILE_SIZE = 500;
 
-    console.log('Compiling user data');
-    const filename = 'all-user.json';
-    const file = createFile(fileList, 'all-user.json');
+    const filename = `./files/all-user${fileIndex}.json`;
+    const file = createFile(fileList, filename);
     if (roundOff(file.size * BYTE_KILO_CONVERSION) > MAX_FILE_SIZE) {
         deleteFile(filename);
 

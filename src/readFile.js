@@ -1,13 +1,10 @@
-import fs from 'fs';
+import fs from 'fs/promises';
 import path from 'path';
-import util from 'util';
-
 const readCredentials = async (pathName) => {
     try {
-        const access = util.promisify(fs.access);
-        await access(pathName);
-        const resolvedFilePath = fs.readFileSync(path.resolve(pathName));
-        return JSON.parse(resolvedFilePath);
+        await fs.access(pathName);
+        const resolvedCredentials = await fs.readFile(path.resolve(pathName));
+        return JSON.parse(resolvedCredentials);
     } catch (error) {
         throw error;
     }
