@@ -1,5 +1,5 @@
 #!/usr/bin/env node
 
-import startImportProcess from '../src/index.js';
+import migrateCliEntryPoint from '../src/index.js';
 
-startImportProcess();
+migrateCliEntryPoint(process.argv);

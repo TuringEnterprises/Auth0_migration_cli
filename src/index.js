@@ -1,10 +1,11 @@
 import fs from 'fs';
 import axios from 'axios';
+import arg from 'arg';
 import FormData from 'form-data';
 import pkg from 'inquirer';
 import { deleteFile } from './calculateSize.js';
-import generateUserFileListFromDB from './dbConnection.js';
-import readCredentials from './readFile.js';
+import { generateUserFileListFromDB, updateUserWithAuth0Id, updateAuth0NullValues } from './dbConnection.js';
+import readFile from './readFile.js';
 const { prompt } = pkg;
 
 const askDbCredentials = async () => {
@@ -121,16 +122,21 @@ const validateCredentials = (obj) => {
     }
 };
 
-//Start import job
+/*
+ * Start Import job
+ */
 const startImportProcess = async () => {
     const databaseCredentials = await askDbCredentials();
 
-    const accessCredentials = await readCredentials(databaseCredentials.pathName);
+    const accessCredentials = await readFile(databaseCredentials.pathName);
     validateCredentials(accessCredentials);
     await queryTableAndUploadRecord(databaseCredentials, accessCredentials);
 };
 
-// Query table to return rows
+/*
+ * Query table to return user record and upload to auth0
+ */
+
 async function queryTableAndUploadRecord(databaseCredentials, accessCredentials) {
     try {
         const files = await generateUserFileListFromDB(databaseCredentials);
@@ -142,10 +148,19 @@ async function queryTableAndUploadRecord(databaseCredentials, accessCredentials)
         for (const file of files) {
             await importUserJob({ data: accessCredentials, filePath: file });
 
+            const userList = await readFile(file);
+
             deleteFile(file);
+
+            for (const user of userList) {
+                const auth0Response = await getAuth0EmailAndId(user.email, accessCredentials);
+                if (auth0Response.email && auth0Response.auth0Id) {
+                    await updateUserWithAuth0Id(auth0Response, databaseCredentials);
+                }
+            }
         }
 
-        console.log('Uploaded users data');
+        console.log('Completed user import.');
     } catch (error) {
         throw error;
     }
@@ -218,6 +233,30 @@ async function getJobStatus(jobId, accessCredentials) {
 }
 
 /*
+ * Get Auth0 email and auth0Id
+ */
+export async function getAuth0EmailAndId(email, accessCredentials) {
+    try {
+        const options = {
+            method: 'GET',
+            params: { q: `${email}`, search_engine: 'v3' },
+            headers: {
+                'content-type': 'application/json',
+                authorization: 'Bearer ' + (await getAuth0AccessToken(accessCredentials)),
+            },
+        };
+        const apiResponse = (await axios.get(`${accessCredentials.AUTH0_TENANT}/api/v2/users`, options))?.data;
+
+        return {
+            auth0Id: apiResponse[0]?.user_id,
+            email: apiResponse[0]?.email,
+        };
+    } catch (error) {
+        throw error;
+    }
+}
+
+/*
  * Check job status with an option to retry
  */
 async function checkJobStatusAfterUpload(jobId, accessCredentials) {
@@ -237,4 +276,42 @@ async function checkJobStatusAfterUpload(jobId, accessCredentials) {
     }
 }
 
-export default startImportProcess;
+/*
+ * Parse CLI Arguments
+ */
+function parseArgumentIntoOptions(cliOptions) {
+    const args = arg(
+        {},
+        {
+            argv: cliOptions.slice(2),
+        },
+    );
+
+    const cliMethods = {
+        update: updateDBWithAuth0Id,
+    };
+
+    return cliMethods[args._[0]] ? cliMethods[args._[0]] : startImportProcess;
+}
+
+/*
+ * CLI Entry Function
+ */
+
+async function migrateCliEntryPoint(cliArgs) {
+    const requiredCliMethod = await parseArgumentIntoOptions(cliArgs);
+    await requiredCliMethod();
+}
+
+/*
+ * Update DB with Auth0Id
+ */
+async function updateDBWithAuth0Id() {
+    const databaseCredentials = await askDbCredentials();
+
+    const accessCredentials = await readFile(databaseCredentials.pathName);
+    validateCredentials(accessCredentials);
+    await updateAuth0NullValues(databaseCredentials, accessCredentials);
+}
+
+export default migrateCliEntryPoint;

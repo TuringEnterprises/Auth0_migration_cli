@@ -1,13 +1,13 @@
 import fs from 'fs/promises';
 import path from 'path';
-const readCredentials = async (pathName) => {
+const readFile = async (pathName) => {
     try {
         await fs.access(pathName);
-        const resolvedCredentials = await fs.readFile(path.resolve(pathName));
-        return JSON.parse(resolvedCredentials);
+        const resolvedFileContent = await fs.readFile(path.resolve(pathName));
+        return JSON.parse(resolvedFileContent);
     } catch (error) {
         throw error;
     }
 };
 
-export default readCredentials;
+export default readFile;
