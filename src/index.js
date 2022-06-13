@@ -299,7 +299,7 @@ function parseArgumentIntoOptions(cliOptions) {
  */
 
 async function migrateCliEntryPoint(cliArgs) {
-    const requiredCliMethod = await parseArgumentIntoOptions(cliArgs);
+    const requiredCliMethod = parseArgumentIntoOptions(cliArgs);
     await requiredCliMethod();
 }
 
