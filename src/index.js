@@ -6,6 +6,7 @@ import pkg from 'inquirer';
 import { deleteFile } from './calculateSize.js';
 import { generateUserFileListFromDB, updateUserWithAuth0Id, updateAuth0NullValues } from './dbConnection.js';
 import readFile from './readFile.js';
+import chalk from 'chalk'
 const { prompt } = pkg;
 
 const askDbCredentials = async () => {
@@ -141,9 +142,9 @@ async function queryTableAndUploadRecord(databaseCredentials, accessCredentials)
     try {
         const files = await generateUserFileListFromDB(databaseCredentials);
 
-        console.log(`Generated ${files.length} file(s)`);
+        console.log(chalk.blue.underline.bold(`Generated ${files.length} file(s)`));
 
-        console.log('Uploading users data');
+        console.log(chalk.yellowBright('Uploading users data'));
         //FIX
         for (const file of files) {
             await importUserJob({ data: accessCredentials, filePath: file });
@@ -160,7 +161,7 @@ async function queryTableAndUploadRecord(databaseCredentials, accessCredentials)
             }
         }
 
-        console.log('Completed user import.');
+        console.log(chalk.green('Completed user import.'));
     } catch (error) {
         throw error;
     }
