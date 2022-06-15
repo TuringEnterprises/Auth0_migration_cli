@@ -20,12 +20,16 @@ const splitArray = (listOfFiles) => {
     const MAXIMUM_OBJECT_SIZE = 390000;
 
     for (let i = 0; i < listOfFiles.length; i++) {
+
+        //LIST OF OBJECTS THAT THEIR SIZES ARE BEING CALCULATED
         const tempNewFile = [...newFile, listOfFiles[i]];
         const tempNewFileSize = getStringSize(JSON.stringify(tempNewFile));
 
+        //CHECK IF CALCULATED OBJECTS SIZE IS GREATER THAN MAXIMUM OBJECT SIZE
         if (tempNewFileSize > MAXIMUM_OBJECT_SIZE) {
             generateFile(newFile, `./files/${i}-${tempNewFileSize}.json`, fileList);
             newFile = [listOfFiles[i]];
+            //CHECK IF REMAINING OBJECT IS LAST IN THE LIST
             if (i === listOfFiles.length - 1 && newFile.length) {
                 generateFile(newFile, `./files/${i}-${tempNewFileSize}-last.json`, fileList);
                 newFile = [];
@@ -34,12 +38,14 @@ const splitArray = (listOfFiles) => {
             continue;
         }
 
+        //CHECK IF CALCULATED OBJECTS SIZE IS EQUAL TO MAXIMUM OBJECT SIZE
         if (tempNewFileSize === MAXIMUM_OBJECT_SIZE) {
             generateFile(tempNewFile, `./files/${i}-${tempNewFileSize}.json`, fileList);
             newFile = [];
             continue;
         }
 
+        //CHECK IF CURRENT OBJECT IS THE LAST OBJECT IN THE LIST
         if (i === listOfFiles.length - 1 && newFile.length) {
             generateFile(newFile, `./files/${i}-${tempNewFileSize}-last.json`, fileList);
             newFile = [];

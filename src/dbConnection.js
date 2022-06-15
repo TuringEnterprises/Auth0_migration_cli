@@ -1,6 +1,7 @@
 import mysql from 'mysql2/promise';
 import { balancedFileList } from './calculateSize.js';
 import { getAuth0EmailAndId } from './index.js';
+import chalk from 'chalk';
 
 const connectToDb = async (connectionArgs) => {
     try {
@@ -86,10 +87,10 @@ export const updateAuth0NullValues = async (tablePayload, accessCredentials) => 
             if (auth0Response.email && auth0Response.auth0Id) {
                 await updateUserWithAuth0Id(auth0Response, tablePayload);
             }
-            console.log(`Auth0 record not found for email ${queryResult[i].email}`);
+            console.log(`Auth0 record not found for email ${chalk.cyanBright(queryResult[i].email)}`);
         }
     }
-    console.log('Updated user records');
+    console.log(chalk.green.bold('Updated user records'));
 
     connection.end();
 };
