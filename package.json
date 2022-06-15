@@ -1,5 +1,5 @@
 {
-    "name": "@turing/migrate",
+    "name": "@turingenterprises/migrate",
     "version": "1.0.0",
     "description": "Auth0 Migration cli",
     "main": "./index.js",
@@ -38,6 +38,6 @@
         "rimraf": "^3.0.2"
     },
     "author": "",
-    "license": "ISC",
+    "license": "UNLICENSED",
     "type": "module"
 }
