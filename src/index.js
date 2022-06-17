@@ -3,10 +3,10 @@ import axios from 'axios';
 import arg from 'arg';
 import FormData from 'form-data';
 import pkg from 'inquirer';
-import { deleteFile } from './calculateSize.js';
 import { generateUserFileListFromDB, updateUserWithAuth0Id, updateAuth0NullValues } from './dbConnection.js';
 import readFile from './readFile.js';
-import chalk from 'chalk'
+import { deleteFile } from './saveToFiles.js';
+import chalk from 'chalk';
 const { prompt } = pkg;
 
 const askDbCredentials = async () => {
@@ -145,16 +145,17 @@ async function queryTableAndUploadRecord(databaseCredentials, accessCredentials)
         console.log(chalk.blue.underline.bold(`Generated ${files.length} file(s)`));
 
         console.log(chalk.yellowBright('Uploading users data'));
-        //FIX
+        // FIX
         for (const file of files) {
             await importUserJob({ data: accessCredentials, filePath: file });
 
             const userList = await readFile(file);
 
-            deleteFile(file);
+            await deleteFile(file);
 
             for (const user of userList) {
                 const auth0Response = await getAuth0EmailAndId(user.email, accessCredentials);
+                console.log('auth0>>', auth0Response);
                 if (auth0Response.email && auth0Response.auth0Id) {
                     await updateUserWithAuth0Id(auth0Response, databaseCredentials);
                 }

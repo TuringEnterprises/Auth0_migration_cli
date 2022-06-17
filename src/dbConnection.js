@@ -1,7 +1,7 @@
 import mysql from 'mysql2/promise';
-import { balancedFileList } from './calculateSize.js';
-import { getAuth0EmailAndId } from './index.js';
 import chalk from 'chalk';
+import { getAuth0EmailAndId } from './index.js';
+import { saveToFiles } from './saveToFiles.js';
 
 const connectToDb = async (connectionArgs) => {
     try {
@@ -52,7 +52,7 @@ export const generateUserFileListFromDB = async (tablePayload) => {
             item.app_metadata = { roles: [postMatchObjectKeys[rolesIndex]] };
             return item;
         });
-        const files = await balancedFileList(postMatchUsers, i);
+        const files = await saveToFiles(postMatchUsers, i);
         userFileList.push(files);
     }
 

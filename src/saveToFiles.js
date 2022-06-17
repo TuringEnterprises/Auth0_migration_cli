@@ -1,6 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
-export const MAX_FILE_SIZE_BYTES = 500_000;
+const MAX_FILE_SIZE_BYTES = 500_000;
 
 function* chunkify(iter, by = MAX_FILE_SIZE_BYTES) {
     const SEP = ',';
@@ -33,12 +33,17 @@ function* chunkify(iter, by = MAX_FILE_SIZE_BYTES) {
     }
 }
 
-export default async function saveToFiles(users, folder) {
+export async function saveToFiles(users, userIndex) {
+    const folder = path.join(process.cwd(), 'files');
     async function saveChunk(chunk, i) {
-        const fileName = path.join(folder, `chunk-${i}.json`);
+        const fileName = path.join(folder, `chunk-${i}-${userIndex}.json`);
         await fs.writeFile(fileName, chunk);
 
         return fileName;
     }
     return await Promise.all([...chunkify(users)].map(saveChunk));
+}
+
+export async function deleteFile(filename) {
+    await fs.unlink(filename);
 }
