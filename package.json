@@ -1,0 +1,40 @@
+{
+    "name": "@turingenterprises/migrate",
+    "version": "1.0.0",
+    "description": "Auth0 Migration cli",
+    "main": "./index.js",
+    "bin": {
+        "migrate": "bin/migrate.js"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "prettify": "prettier --write .",
+        "lint": "eslint ."
+    },
+    "keywords": [
+        "migrate"
+    ],
+    "dependencies": {
+        "arg": "^5.0.2",
+        "auth0": "^2.42.0",
+        "axios": "^0.27.2",
+        "chalk": "^5.0.1",
+        "form-data": "^4.0.0",
+        "inquirer": "^8.2.4",
+        "mysql2": "^2.3.3"
+    },
+    "devDependencies": {
+        "@babel/eslint-parser": "^7.18.2",
+        "eslint": "^8.17.0",
+        "eslint-config-prettier": "^8.5.0",
+        "eslint-config-recommended": "^4.1.0",
+        "eslint-plugin-prettier": "^4.0.0",
+        "prettier": "^2.6.2"
+    },
+    "author": "",
+    "license": "UNLICENSED",
+    "type": "module"
+}
