@@ -1,5 +1,5 @@
-import mysql from 'mysql2/promise';
-import dbConfigs from '../../configs/database.js';
+import mysql from "mysql2/promise";
+import dbConfigs from "../../configs/database.js";
 
 // Initialize pool
 const { host, user, password, database, port } = dbConfigs;
